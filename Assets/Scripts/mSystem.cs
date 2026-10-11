@@ -379,12 +379,24 @@ public class mSystem
 		Debug.Log(str);
 	}
 	static long lastGCC;
+	static int mainThreadId = -1;
+
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+	static void CaptureMainThread()
+	{
+		mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+	}
+
 	public static void gcc()
 	{
 		if (mSystem.currentTimeMillis() - lastGCC >= 30000)
 		{
 			lastGCC = mSystem.currentTimeMillis();
-			Resources.UnloadUnusedAssets();
+			// UnloadUnusedAssets is main-thread only; gcc() is also called from the network thread.
+			if (System.Threading.Thread.CurrentThread.ManagedThreadId == mainThreadId)
+			{
+				Resources.UnloadUnusedAssets();
+			}
 			GC.Collect();
 		}
 	}
