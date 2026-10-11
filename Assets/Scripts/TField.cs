@@ -779,7 +779,28 @@ public class TField : IActionListener
         return result;
     }
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
     [System.Runtime.InteropServices.DllImport("USER32.dll")] public static extern short GetKeyState(int nVirtKey);
+#else
+    // USER32.dll only exists on Windows; emulate the few virtual keys used here via Unity Input.
+    public static short GetKeyState(int nVirtKey)
+    {
+        bool down = false;
+        switch (nVirtKey)
+        {
+            case 0x11: // Ctrl
+            case 0xA2: // Left Ctrl
+            case 0xA3: // Right Ctrl
+                down = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)
+                    || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
+                break;
+            case 0x56: // V
+                down = Input.GetKey(KeyCode.V);
+                break;
+        }
+        return down ? unchecked((short)0x8000) : (short)0;
+    }
+#endif
     static bool IsCapsLockOn => (GetKeyState(0x14) & 1) > 0; public static bool IsKeyDown(int nVirtKey)
     {
         return (GetKeyState(nVirtKey) & 0x8000) > 0;
