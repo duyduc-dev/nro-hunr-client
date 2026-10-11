@@ -8,8 +8,8 @@
 /.vs/
 /.vscode/
 /MemoryCaptures/
-*.csproj
-*.sln
+# *.csproj
+# *.sln
 *.pidb
 *.booproj
 *.svd
